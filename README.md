@@ -88,6 +88,127 @@ Example:
 pnpm provision:tenant org_2abc123def456
 ```
 
+## Workflow: Starting a New Project
+
+When setting up a new project from scratch, follow these steps in order after application setup step:
+
+### Step 1: Migrate Master Schema
+
+**Command:**
+```bash
+pnpm migrate:master
+```
+
+**What it does:**
+- Runs all migrations in `src/master/migrations/`
+- Creates the `tenants` table in the `public` schema
+- Creates other shared/public schema tables if presents (e.g., `countries`, `categories`)
+
+**Prerequisites:**
+- Ensure `src/master/migrations/20251103123228_init_db.js` exists (this creates the `tenants` table)
+- The `init_db.js` migration must always be present and run first
+
+**Outcome:**
+- ✅ `public.tenants` table is created and ready to store tenant records
+- ✅ All master/public schema tables are initialized
+- ✅ Migration tracking table `knex_migrations_master` is created
+
+---
+
+### Step 2: Provision Default Tenant
+
+**Command:**
+```bash
+pnpm provision:tenant default_tenant
+```
+
+**What it does:**
+- Creates a new schema for the tenant (e.g., `tid_cf4116b064`)
+- Registers the tenant in the `public.tenants` table with status `PROVISIONING`
+- Ensures the `vector` extension is available in the public schema
+- Runs initial tenant migrations (if any exist)
+
+**Outcome:**
+- ✅ A new tenant schema is created (named using a hash of the `clerk_org_id`)
+- ✅ Record added to `public.tenants` table mapping `clerk_org_id` → `schema_name`
+- ✅ Tenant status set to `ACTIVE` after successful migration
+- ✅ Initial tenant schema is ready for tables
+
+**Note:** The `default_tenant` is typically used for development/testing. In production, you'll provision tenants when you onboard a new organization.
+
+---
+
+### Step 3: Create Tenant Migrations
+
+**Command:**
+```bash
+pnpm migrate:make:tenant <migration_name>
+```
+
+**What it does:**
+- Creates a new migration file in `src/tenants/migrations/`
+- Generates a timestamp-prefixed filename (e.g., `20251103170000_add_user_preferences.js`)
+
+**Examples:**
+```bash
+pnpm migrate:make:tenant add_user_preferences
+pnpm migrate:make:tenant user_message_history
+```
+
+**Outcome:**
+- ✅ New migration file created at `src/tenants/migrations/[timestamp]_<migration_name>.js`
+- ✅ File contains skeleton `exports.up` and `exports.down` functions
+- ✅ Ready to implement your table changes
+
+**Important:** Edit the migration file to implement your schema changes before running step 4.
+
+---
+
+### Step 4: Run Tenant Migrations
+
+**Command:**
+```bash
+pnpm migrate:tenants
+```
+
+**What it does:**
+- Runs all pending migrations in `src/tenants/migrations/` against all active tenant schemas
+- Applies migrations in order based on timestamp
+- Updates migration tracking table `knex_migrations_tenant` in each tenant schema
+
+**Outcome:**
+- ✅ All tenant schemas (including `default_tenant`) have the new tables/columns
+- ✅ Schema changes are synchronized across all tenants
+- ✅ Migration history is tracked per tenant schema
+
+**Note:** If provisioning fails for a specific tenant, it will be marked as `FAILED` in the `tenants` table.
+
+---
+
+## Quick Start Checklist
+
+For a new project, execute these commands in sequence:
+
+```bash
+# 1. Install dependencies
+pnpm install
+
+# 2. Set up environment variables (create .env file)
+# See "Application Setup" section above
+
+# 3. Migrate master schema (creates tenants table)
+pnpm migrate:master
+
+# 4. Provision default tenant for development
+pnpm provision:tenant default_tenant
+
+# 5. Create your first tenant migration (optional)
+pnpm migrate:make:tenant initial_tables
+
+# 6. Edit the migration file, then run it
+pnpm migrate:tenants
+```
+
 ## Available Commands
 
 ### Migration Management
@@ -173,6 +294,21 @@ For connecting to AWS RDS or other SSL-enabled databases:
 **SSL Connection Issues**
 - Verify the certificate file exists at the specified path
 - Check that `DB_SSL_REJECT_UNAUTHORIZED` is set appropriately for your environment
+
+## References
+
+### Knex.js Documentation
+
+This project uses [Knex.js](https://knexjs.org/) as the query builder and migration tool. For more information, see:
+
+- **[Knex.js Guide](https://knexjs.org/guide/)** - Complete guide to Knex.js features and configuration
+- **[Migrations Guide](https://knexjs.org/guide/migrations.html)** - Detailed documentation on creating and managing database migrations
+- **[Schema Builder](https://knexjs.org/guide/schema-builder.html)** - Reference for building database schemas with Knex
+
+### Additional Resources
+
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [pgvector Extension](https://github.com/pgvector/pgvector) - Vector similarity search for PostgreSQL
 
 ## License
 
