@@ -1,0 +1,30 @@
+{
+  "name": "multi-tenant-db-migrations",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+
+    "provision:tenant": "node  --trace-uncaught src/provisionTenant.js",
+
+    "migrate:make:master": "knex migrate:make --migrations-directory src/master/migrations",
+    "migrate:make:tenant": "knex migrate:make --migrations-directory src/tenants/migrations",
+
+    "migrate:master": "node  --trace-uncaught src/migrateMaster.js",
+    "migrate:tenants": "node  --trace-uncaught src/migrateTenant.js",
+
+    "rollback:master": "node  --trace-uncaught src/rollbackMaster.js",
+    "rollback:tenants": "node  --trace-uncaught src/rollbackTenant.js"
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.2",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "knex": "^3.1.0",
+    "pg": "^8.16.3"
+  }
+}

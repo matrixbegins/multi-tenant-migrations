@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables (sensitive credentials)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Database dumps and backups (if any)
+*.sql.gz
+*.dump
+*.backup
+
+# Migration lock files (if Knex creates any)
+.knex_migrations_lock
+
+# Package manager lock files (optional - uncomment if you don't want to commit)
+# pnpm-lock.yaml
+# package-lock.json
+# yarn.lock
